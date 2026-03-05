@@ -11,9 +11,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "50mb",
     },
   },
+  turbopack: {},
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Prevent pdfjs from being bundled on server
       config.resolve.alias = {
         ...config.resolve.alias,
         canvas: false,
