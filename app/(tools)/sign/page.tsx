@@ -3,11 +3,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { PDFDocument } from "pdf-lib";
 import type * as PdfjsLibType from "pdfjs-dist";
 
-// Dynamic import helper
 async function getPdfjs(): Promise<typeof PdfjsLibType> {
   const lib = await import("pdfjs-dist");
-  // Set worker source here inside the loader
-  lib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${lib.version}/build/pdf.worker.min.mjs`;
+  lib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
   return lib;
 }
 import {

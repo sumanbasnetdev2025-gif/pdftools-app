@@ -1,12 +1,6 @@
 "use client";
 import { useState } from "react";
 import type * as PdfjsLibType from "pdfjs-dist";
-
-async function getPdfjs(): Promise<typeof PdfjsLibType> {
-  const lib = await import("pdfjs-dist");
-  lib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${lib.version}/build/pdf.worker.min.mjs`;
-  return lib;
-}
 import ToolHeader from "@/components/tools/ToolHeader";
 import DropZone from "@/components/upload/DropZone";
 import FileList from "@/components/upload/FileList";
@@ -17,8 +11,12 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { validatePDF } from "@/lib/utils/fileValidation";
 import { downloadBlob } from "@/lib/utils/fileDownload";
 
-// Set worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+async function getPdfjs(): Promise<typeof PdfjsLibType> {
+  const lib = await import("pdfjs-dist");
+  lib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  return lib;
+}
+
 type Quality = "low" | "medium" | "high";
 const qualityMap: Record<Quality, number> = { low: 1, medium: 1.5, high: 2 };
 
@@ -45,8 +43,9 @@ export default function PDFToJPGPage() {
       setAllStatus("processing");
       setProgress(10);
 
+      const pdfjs = await getPdfjs();
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       const totalPages = pdf.numPages;
       const scale = qualityMap[quality];
       const blobs: { blob: Blob; name: string }[] = [];
@@ -60,7 +59,7 @@ export default function PDFToJPGPage() {
         canvas.height = viewport.height;
         const ctx = canvas.getContext("2d")!;
 
-        await await (page.render as any)({ canvasContext: ctx, viewport }).promise;;
+        await (page.render as any)({ canvasContext: ctx, viewport }).promise;
 
         const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
         previewUrls.push(dataUrl);
@@ -123,8 +122,6 @@ export default function PDFToJPGPage() {
               {hasFiles && (
                 <>
                   <FileList files={files} onRemove={removeFile} />
-
-                  {/* Quality */}
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-gray-700">Image quality</p>
                     <div className="grid grid-cols-3 gap-2">
@@ -157,8 +154,6 @@ export default function PDFToJPGPage() {
                 <p className="font-semibold text-gray-800 text-lg">✅ Converted {previews.length} page{previews.length > 1 ? "s" : ""}!</p>
                 <p className="text-gray-400 text-sm mt-1">Click any image to download individually</p>
               </div>
-
-              {/* Image previews */}
               <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                 {previews.map((url, i) => (
                   <div
@@ -168,17 +163,12 @@ export default function PDFToJPGPage() {
                   >
                     <img src={url} alt={`Page ${i + 1}`} className="w-full object-cover aspect-[3/4]" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                      <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                        ⬇ Download
-                      </span>
+                      <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">⬇ Download</span>
                     </div>
-                    <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
-                      {i + 1}
-                    </div>
+                    <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">{i + 1}</div>
                   </div>
                 ))}
               </div>
-
               <div className="flex items-center justify-center gap-3 pt-2">
                 <button
                   onClick={downloadAll}

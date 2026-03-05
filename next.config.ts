@@ -1,29 +1,15 @@
 import type { NextConfig } from "next";
+import CopyPlugin from "copy-webpack-plugin";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: [
-    "tesseract.js",
-    "@sparticuz/chromium-min",
-    "node-qpdf2",
-  ],
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "50mb",
-    },
-  },
+  serverExternalPackages: ["tesseract.js", "@sparticuz/chromium-min", "node-qpdf2"],
+  experimental: { serverActions: { bodySizeLimit: "50mb" } },
   turbopack: {},
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        canvas: false,
-      };
+      config.resolve.alias = { ...config.resolve.alias, canvas: false };
     }
     return config;
   },
