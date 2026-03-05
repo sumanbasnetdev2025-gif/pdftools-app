@@ -60,7 +60,7 @@ export default function PDFToJPGPage() {
         canvas.height = viewport.height;
         const ctx = canvas.getContext("2d")!;
 
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        await await (page.render as any)({ canvasContext: ctx, viewport }).promise;;
 
         const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
         previewUrls.push(dataUrl);

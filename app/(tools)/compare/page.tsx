@@ -50,8 +50,7 @@ export default function ComparePDFPage() {
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       const ctx = canvas.getContext("2d")!;
-      await page.render({ canvasContext: ctx, viewport }).promise;
-      pages.push(canvas.toDataURL("image/jpeg", 0.85));
+await (page.render as any)({ canvasContext: ctx, viewport }).promise;      pages.push(canvas.toDataURL("image/jpeg", 0.85));
     }
 
     return { file, pages, pageCount };
