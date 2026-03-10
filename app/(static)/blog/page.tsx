@@ -1,124 +1,78 @@
 import Link from "next/link";
+import { blogPosts } from "@/lib/blog/posts";
+import type { Metadata } from "next";
 
-const posts = [
-  {
-    slug: "how-to-compress-pdf",
-    title: "How to Compress a PDF Without Losing Quality",
-    excerpt: "Learn the best techniques to reduce PDF file size while keeping your images and text sharp.",
-    category: "Tutorial",
-    date: "March 1, 2025",
-    readTime: "3 min read",
-    emoji: "🗜️",
+export const metadata: Metadata = {
+  title: "Blog — PDF Tips, Guides & Tutorials | PDFMaster",
+  description: "Learn how to compress, convert, merge, sign and protect PDFs. Expert guides and tutorials from the PDFMaster team.",
+  openGraph: {
+    title: "Blog — PDF Tips, Guides & Tutorials | PDFMaster",
+    description: "Learn how to compress, convert, merge, sign and protect PDFs. Expert guides and tutorials.",
+    type: "website",
   },
-  {
-    slug: "pdf-to-word-guide",
-    title: "The Complete Guide to Converting PDF to Word",
-    excerpt: "Everything you need to know about converting PDFs to editable Word documents accurately.",
-    category: "Guide",
-    date: "Feb 20, 2025",
-    readTime: "5 min read",
-    emoji: "📝",
-  },
-  {
-    slug: "protect-pdf-passwords",
-    title: "How to Password Protect Your PDF Files",
-    excerpt: "Keep your sensitive documents secure by adding password protection to your PDFs.",
-    category: "Security",
-    date: "Feb 10, 2025",
-    readTime: "4 min read",
-    emoji: "🔒",
-  },
-  {
-    slug: "merge-pdf-tips",
-    title: "5 Tips for Merging PDFs Like a Pro",
-    excerpt: "Discover the best practices for combining multiple PDF files into one clean document.",
-    category: "Tips",
-    date: "Jan 28, 2025",
-    readTime: "3 min read",
-    emoji: "🔗",
-  },
-  {
-    slug: "ocr-explained",
-    title: "What is OCR and How Does It Work?",
-    excerpt: "A beginner's guide to Optical Character Recognition and how to extract text from scanned PDFs.",
-    category: "Education",
-    date: "Jan 15, 2025",
-    readTime: "6 min read",
-    emoji: "🔍",
-  },
-  {
-    slug: "pdf-accessibility",
-    title: "Making Your PDFs Accessible to Everyone",
-    excerpt: "Best practices for creating accessible PDF documents that work for all users.",
-    category: "Accessibility",
-    date: "Jan 5, 2025",
-    readTime: "4 min read",
-    emoji: "♿",
-  },
-];
+};
 
-const categories = ["All", "Tutorial", "Guide", "Tips", "Security", "Education"];
+const categoryColors: Record<string, string> = {
+  Tutorial: "#3B82F6",
+  Guide: "#8B5CF6",
+  Security: "#EF4444",
+  Tips: "#F59E0B",
+  Education: "#10B981",
+  Accessibility: "#06B6D4",
+};
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-red-50 to-rose-50 border-b border-red-100">
-        <div className="max-w-5xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl font-bold text-gray-900">PDFMaster Blog</h1>
-          <p className="text-lg text-gray-500 mt-3">
-            Tips, tutorials, and guides for working with PDF files
-          </p>
-        </div>
-      </section>
+    <>
+      <style>{`
+        .blog-root { min-height: 100vh; background: #0a0a0a; font-family: 'DM Sans', sans-serif; }
+        .blog-hero { padding: 80px 24px 48px; text-align: center; border-bottom: 1px solid #1a1a1a; }
+        .blog-hero-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #F59E0B; margin-bottom: 16px; }
+        .blog-hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); color: #f0f0f0; margin-bottom: 16px; line-height: 1.1; }
+        .blog-hero-title em { font-style: italic; color: #F59E0B; }
+        .blog-hero-sub { font-size: 1rem; color: #555; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+        .blog-container { max-width: 1100px; margin: 0 auto; padding: 56px 24px; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .blog-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 16px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: all 0.2s; }
+        .blog-card:hover { border-color: #2a2a2a; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        .blog-card-thumb { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: #111; border-bottom: 1px solid #1a1a1a; }
+        .blog-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .blog-card-meta { display: flex; align-items: center; gap: 10px; }
+        .blog-cat { font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+        .blog-read-time { font-size: 0.72rem; color: #444; }
+        .blog-card-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: #e0e0e0; line-height: 1.4; flex: 1; }
+        .blog-card-desc { font-size: 0.82rem; color: #555; line-height: 1.6; }
+        .blog-card-date { font-size: 0.72rem; color: #333; margin-top: auto; padding-top: 12px; border-top: 1px solid #141414; }
+      `}</style>
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-10">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                cat === "All"
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      <div className="blog-root">
+        <div className="blog-hero">
+          <p className="blog-hero-label">PDFMaster Blog</p>
+          <h1 className="blog-hero-title">PDF Tips, Guides &amp; <em>Tutorials</em></h1>
+          <p className="blog-hero-sub">Learn how to get more from your PDFs — from compression to security, conversion to accessibility.</p>
         </div>
 
-        {/* Posts grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-red-200 hover:shadow-md transition-all"
-            >
-              <div className="bg-gradient-to-br from-red-50 to-rose-50 h-32 flex items-center justify-center text-5xl">
-                {post.emoji}
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                    {post.category}
-                  </span>
-                  <span className="text-xs text-gray-400">{post.readTime}</span>
+        <div className="blog-container">
+          <div className="blog-grid">
+            {blogPosts.map((post) => (
+              <Link key={post.slug} href={`/blog/${post.slug}`} className="blog-card">
+                <div className="blog-card-thumb">{post.emoji}</div>
+                <div className="blog-card-body">
+                  <div className="blog-card-meta">
+                    <span className="blog-cat" style={{ backgroundColor: `${categoryColors[post.category] || "#666"}22`, color: categoryColors[post.category] || "#999" }}>
+                      {post.category}
+                    </span>
+                    <span className="blog-read-time">{post.readTime}</span>
+                  </div>
+                  <h2 className="blog-card-title">{post.title}</h2>
+                  <p className="blog-card-desc">{post.description}</p>
+                  <p className="blog-card-date">{post.date}</p>
                 </div>
-                <h2 className="font-bold text-gray-900 group-hover:text-red-600 transition-colors leading-snug">
-                  {post.title}
-                </h2>
-                <p className="text-sm text-gray-500 mt-2 leading-relaxed line-clamp-2">
-                  {post.excerpt}
-                </p>
-                <p className="text-xs text-gray-400 mt-3">{post.date}</p>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
-    </main>
+    </>
   );
 }

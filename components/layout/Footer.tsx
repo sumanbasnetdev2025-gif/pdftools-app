@@ -122,9 +122,8 @@ export default function Footer() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                30+ professional PDF tools. Free, fast and private.
-                No installs required.
-                We are still under development phase...
+                30+ professional PDF tools. Free, fast and private. No installs
+                required. We are still under development phase...
               </p>
 
               <div
@@ -262,10 +261,11 @@ export default function Footer() {
               marginTop: "48px",
               padding: "20px 0",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "12px",
+              justifyContent: "center",
+              gap: "10px",
+              textAlign: "center",
             }}
           >
             <p
@@ -277,17 +277,35 @@ export default function Footer() {
             >
               © {new Date().getFullYear()} PDFMaster. All rights reserved.
             </p>
-            <div style={{ display: "flex", gap: "20px" }}>
+
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#999",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Developed by{" "}
+              <span style={{ color: "#F59E0B" }}>CWSolutions Nepal</span>
+            </p>
+
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#777",
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Contact: +977-9704738463 | Mail: cwsolutions2025@gmail.com
+            </p>
+
+            <div style={{ display: "flex", gap: "20px", marginTop: "6px" }}>
               {[
                 ["Privacy", "/privacy"],
                 ["Terms", "/terms"],
                 ["Cookies", "/cookies"],
               ].map(([label, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="footer-bottom-link"
-                >
+                <Link key={href} href={href} className="footer-bottom-link">
                   {label}
                 </Link>
               ))}
