@@ -16,6 +16,7 @@ export default function Footer() {
         .footer-link:hover {
           color: #F59E0B;
         }
+
         .footer-bottom-link {
           text-decoration: none;
           color: #ffffff;
@@ -26,6 +27,7 @@ export default function Footer() {
         .footer-bottom-link:hover {
           color: #F59E0B;
         }
+
         .footer-social {
           padding: 6px 12px;
           border-radius: 8px;
@@ -42,17 +44,20 @@ export default function Footer() {
           color: #F59E0B;
           border-color: rgba(245,158,11,0.3);
         }
+
         .footer-grid {
           display: grid;
           grid-template-columns: 2fr 1fr 1fr 1fr;
           gap: 48px;
         }
+
         @media (max-width: 768px) {
           .footer-grid {
             grid-template-columns: 1fr 1fr;
             gap: 32px;
           }
         }
+
         @media (max-width: 480px) {
           .footer-grid {
             grid-template-columns: 1fr;
@@ -102,6 +107,7 @@ export default function Footer() {
                 >
                   📄
                 </div>
+
                 <span
                   style={{
                     fontFamily: "'DM Serif Display', serif",
@@ -119,7 +125,6 @@ export default function Footer() {
                   color: "#444",
                   lineHeight: 1.7,
                   maxWidth: "260px",
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 30+ professional PDF tools. Free, fast and private. No installs
@@ -156,18 +161,12 @@ export default function Footer() {
                   textTransform: "uppercase",
                   color: "#ffffff",
                   marginBottom: "16px",
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 Tools
               </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   ["Merge PDF", "/merge"],
                   ["Split PDF", "/split"],
@@ -193,18 +192,12 @@ export default function Footer() {
                   textTransform: "uppercase",
                   color: "#ffffff",
                   marginBottom: "16px",
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 Company
               </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   ["About Us", "/about"],
                   ["Blog", "/blog"],
@@ -228,18 +221,12 @@ export default function Footer() {
                   textTransform: "uppercase",
                   color: "#ffffff",
                   marginBottom: "16px",
-                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 Legal
               </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   ["Privacy Policy", "/privacy"],
                   ["Terms of Service", "/terms"],
@@ -254,7 +241,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Bottom bar */}
+          {/* Bottom Bar */}
           <div
             style={{
               borderTop: "1px solid #141414",
@@ -263,39 +250,31 @@ export default function Footer() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
               gap: "10px",
               textAlign: "center",
             }}
           >
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#ffffff",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
+            <p style={{ fontSize: "0.8rem", color: "#ffffff" }}>
               © {new Date().getFullYear()} PDFMaster. All rights reserved.
             </p>
 
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#999",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
+            <p style={{ fontSize: "0.8rem", color: "#999" }}>
               Developed by{" "}
-              <span style={{ color: "#F59E0B" }}>CWSolutions Nepal</span>
+              <a
+                href="https://cws-nep.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#F59E0B",
+                  textDecoration: "none",
+                  fontWeight: "500",
+                }}
+              >
+                CWSolutions Nepal
+              </a>
             </p>
 
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#777",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
+            <p style={{ fontSize: "0.8rem", color: "#777" }}>
               Contact: +977-9704738463 | Mail: cwsolutions2025@gmail.com
             </p>
 
