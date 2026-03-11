@@ -1,7 +1,7 @@
 # PDFMaster 🔴
 
 A full-featured PDF toolkit built with **Next.js 14**, **Tailwind CSS**, and **shadcn/ui**.
-Inspired by iLovePDF — merge, split, compress, convert, watermark, sign, and more.
+Inspired by iLovePDF — merge, split, compress, convert, watermark, sign and more.
 
 ---
 
