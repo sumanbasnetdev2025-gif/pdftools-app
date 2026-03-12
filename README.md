@@ -24,7 +24,7 @@ Inspired by iLovePDF — merge, split, compress, convert, watermark, sign and mo
 
 ### 1. Clone and install
 ```bash
-git clone https://github.com/yourname/pdf-master.git
+git clone https://github.com/sumanbasnetdev2025-gif/pdftools-app.git
 cd pdf-master
 npm install
 ```
