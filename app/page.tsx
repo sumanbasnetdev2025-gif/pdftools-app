@@ -4,7 +4,8 @@ import { ArrowRight } from "lucide-react";
 
 const toolGroups = [
   {
-    category: "Organize", color: "#F59E0B",
+    category: "Organize",
+    color: "#F59E0B",
     tools: [
       { href: "/merge", emoji: "🔗", label: "Merge PDF" },
       { href: "/split", emoji: "✂️", label: "Split PDF" },
@@ -15,7 +16,8 @@ const toolGroups = [
     ],
   },
   {
-    category: "Optimize", color: "#10B981",
+    category: "Optimize",
+    color: "#10B981",
     tools: [
       { href: "/compress", emoji: "🗜️", label: "Compress PDF" },
       { href: "/repair", emoji: "🔧", label: "Repair PDF" },
@@ -26,7 +28,8 @@ const toolGroups = [
     ],
   },
   {
-    category: "Secure", color: "#8B5CF6",
+    category: "Secure",
+    color: "#8B5CF6",
     tools: [
       { href: "/protect", emoji: "🔒", label: "Protect PDF" },
       { href: "/unlock", emoji: "🔓", label: "Unlock PDF" },
@@ -37,7 +40,8 @@ const toolGroups = [
     ],
   },
   {
-    category: "Convert", color: "#EF4444",
+    category: "Convert",
+    color: "#EF4444",
     tools: [
       { href: "/convert/pdf-to-word", emoji: "📝", label: "PDF → Word" },
       { href: "/convert/pdf-to-jpg", emoji: "🖼️", label: "PDF → JPG" },
@@ -48,11 +52,14 @@ const toolGroups = [
     ],
   },
   {
-    category: "Images", color: "#06B6D4",
+    category: "Image Tools",
+    color: "#06B6D4",
     tools: [
       { href: "/image-resize", emoji: "📐", label: "Image Resize" },
       { href: "/background-remover", emoji: "✨", label: "BG Remover" },
       { href: "/passport-photo", emoji: "🪪", label: "Passport Photo" },
+      { href: "/image-convert", emoji: "🔄", label: "Image Convert" },
+      { href: "/compress-image", emoji: "🗜️", label: "Compress Image" },
     ],
   },
 ];
