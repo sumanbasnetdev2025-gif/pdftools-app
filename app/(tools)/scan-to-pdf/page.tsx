@@ -2,11 +2,25 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { PDFDocument } from "pdf-lib";
 import {
-  Camera, Upload, Download, Trash2, RotateCw, RotateCcw,
-  Plus, X, ChevronLeft, ChevronRight, Check, Sun, Contrast,
+  Camera,
+  Upload,
+  Download,
+  Trash2,
+  RotateCw,
+  RotateCcw,
+  Plus,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Sun,
+  Contrast,
 } from "lucide-react";
 
-interface Corner { x: number; y: number; }
+interface Corner {
+  x: number;
+  y: number;
+}
 interface ScannedPage {
   id: string;
   originalDataUrl: string;
@@ -19,13 +33,16 @@ interface ScannedPage {
   height: number;
 }
 
-function createDefaultCorners(w: number, h: number): [Corner, Corner, Corner, Corner] {
+function createDefaultCorners(
+  w: number,
+  h: number,
+): [Corner, Corner, Corner, Corner] {
   const pad = 0.05;
   return [
-    { x: w * pad, y: h * pad },         // TL
-    { x: w * (1 - pad), y: h * pad },   // TR
+    { x: w * pad, y: h * pad }, // TL
+    { x: w * (1 - pad), y: h * pad }, // TR
     { x: w * (1 - pad), y: h * (1 - pad) }, // BR
-    { x: w * pad, y: h * (1 - pad) },   // BL
+    { x: w * pad, y: h * (1 - pad) }, // BL
   ];
 }
 
@@ -35,7 +52,7 @@ function perspectiveTransform(
   corners: [Corner, Corner, Corner, Corner],
   brightness: number,
   contrast: number,
-  rotation: number
+  rotation: number,
 ): string {
   const [tl, tr, br, bl] = corners;
 
@@ -77,29 +94,37 @@ function perspectiveTransform(
       const v = y / outH;
 
       // Bilinear interpolation of source coordinates
-      const srcX = (1 - u) * (1 - v) * tl.x + u * (1 - v) * tr.x +
-                   u * v * br.x + (1 - u) * v * bl.x;
-      const srcY = (1 - u) * (1 - v) * tl.y + u * (1 - v) * tr.y +
-                   u * v * br.y + (1 - u) * v * bl.y;
+      const srcX =
+        (1 - u) * (1 - v) * tl.x +
+        u * (1 - v) * tr.x +
+        u * v * br.x +
+        (1 - u) * v * bl.x;
+      const srcY =
+        (1 - u) * (1 - v) * tl.y +
+        u * (1 - v) * tr.y +
+        u * v * br.y +
+        (1 - u) * v * bl.y;
 
       const sx = Math.round(srcX);
       const sy = Math.round(srcY);
 
-      if (sx < 0 || sx >= srcCanvas.width || sy < 0 || sy >= srcCanvas.height) continue;
+      if (sx < 0 || sx >= srcCanvas.width || sy < 0 || sy >= srcCanvas.height)
+        continue;
 
       const srcIdx = (sy * srcCanvas.width + sx) * 4;
       const dstIdx = (y * outW + x) * 4;
 
       // Apply brightness and contrast
-      const b = brightness / 100;
-      const c = contrast / 100;
-      const factor = (259 * (c * 255 + 255)) / (255 * (259 - c * 255));
+      const bFactor = brightness / 100;
+      const cFactor = (contrast - 100) / 100;
 
       for (let ch = 0; ch < 3; ch++) {
         let val = srcData.data[srcIdx + ch];
-        val = val * b; // brightness
-        val = factor * (val - 128) + 128; // contrast
-        outData.data[dstIdx + ch] = Math.max(0, Math.min(255, val));
+        // Brightness
+        val = val * bFactor;
+        // Contrast: scale around 128
+        val = val + (val - 128) * cFactor;
+        outData.data[dstIdx + ch] = Math.max(0, Math.min(255, Math.round(val)));
       }
       outData.data[dstIdx + 3] = 255;
     }
@@ -142,7 +167,7 @@ export default function ScanToPDFPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const applyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const selected = pages.find(p => p.id === selectedId) ?? null;
+  const selected = pages.find((p) => p.id === selectedId) ?? null;
 
   // Update preview size on resize
   useEffect(() => {
@@ -164,14 +189,29 @@ export default function ScanToPDFPage() {
     applyTimeoutRef.current = setTimeout(() => {
       applyProcessing(selected);
     }, 150);
-  }, [selected?.brightness, selected?.contrast, selected?.rotation, selected?.corners]);
+  }, [
+    selected?.brightness,
+    selected?.contrast,
+    selected?.rotation,
+    selected?.corners,
+  ]);
 
   const applyProcessing = async (page: ScannedPage) => {
     return new Promise<void>((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const result = perspectiveTransform(img, page.corners, page.brightness, page.contrast, page.rotation);
-        setPages(prev => prev.map(p => p.id === page.id ? { ...p, processedDataUrl: result } : p));
+        const result = perspectiveTransform(
+          img,
+          page.corners,
+          page.brightness,
+          page.contrast,
+          page.rotation,
+        );
+        setPages((prev) =>
+          prev.map((p) =>
+            p.id === page.id ? { ...p, processedDataUrl: result } : p,
+          ),
+        );
         resolve();
       };
       img.src = page.originalDataUrl;
@@ -181,9 +221,14 @@ export default function ScanToPDFPage() {
   // Camera
   const startCamera = async (front = false) => {
     try {
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      if (streamRef.current)
+        streamRef.current.getTracks().forEach((t) => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: front ? "user" : "environment", width: { ideal: 3840 }, height: { ideal: 2160 } },
+        video: {
+          facingMode: front ? "user" : "environment",
+          width: { ideal: 3840 },
+          height: { ideal: 2160 },
+        },
         audio: false,
       });
       streamRef.current = stream;
@@ -199,7 +244,7 @@ export default function ScanToPDFPage() {
   };
 
   const stopCamera = () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setCameraOpen(false);
     setCameraReady(false);
@@ -243,7 +288,7 @@ export default function ScanToPDFPage() {
         width: img.naturalWidth,
         height: img.naturalHeight,
       };
-      setPages(prev => [...prev, page]);
+      setPages((prev) => [...prev, page]);
       setSelectedId(page.id);
       // Auto-apply initial processing
       setTimeout(() => applyProcessing(page), 100);
@@ -252,10 +297,11 @@ export default function ScanToPDFPage() {
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files; if (!files) return;
-    Array.from(files).forEach(file => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
       const reader = new FileReader();
-      reader.onload = ev => addPageFromDataUrl(ev.target?.result as string);
+      reader.onload = (ev) => addPageFromDataUrl(ev.target?.result as string);
       reader.readAsDataURL(file);
     });
     e.target.value = "";
@@ -263,7 +309,9 @@ export default function ScanToPDFPage() {
 
   const updateSelected = (updates: Partial<ScannedPage>) => {
     if (!selectedId) return;
-    setPages(prev => prev.map(p => p.id === selectedId ? { ...p, ...updates } : p));
+    setPages((prev) =>
+      prev.map((p) => (p.id === selectedId ? { ...p, ...updates } : p)),
+    );
   };
 
   // Corner drag handlers
@@ -281,7 +329,11 @@ export default function ScanToPDFPage() {
     };
   };
 
-  const getCornerFromEvent = (e: React.MouseEvent | React.TouchEvent, imgW: number, imgH: number): Corner => {
+  const getCornerFromEvent = (
+    e: React.MouseEvent | React.TouchEvent,
+    imgW: number,
+    imgH: number,
+  ): Corner => {
     if (!previewRef.current) return { x: 0, y: 0 };
     const rect = previewRef.current.getBoundingClientRect();
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -297,7 +349,10 @@ export default function ScanToPDFPage() {
     };
   };
 
-  const onCornerMouseDown = (e: React.MouseEvent | React.TouchEvent, idx: number) => {
+  const onCornerMouseDown = (
+    e: React.MouseEvent | React.TouchEvent,
+    idx: number,
+  ) => {
     e.stopPropagation();
     e.preventDefault();
     setDraggingCorner(idx);
@@ -307,7 +362,12 @@ export default function ScanToPDFPage() {
     if (draggingCorner === null || !selected) return;
     e.preventDefault();
     const newCorner = getCornerFromEvent(e, selected.width, selected.height);
-    const newCorners = [...selected.corners] as [Corner, Corner, Corner, Corner];
+    const newCorners = [...selected.corners] as [
+      Corner,
+      Corner,
+      Corner,
+      Corner,
+    ];
     newCorners[draggingCorner] = newCorner;
     updateSelected({ corners: newCorners });
   };
@@ -316,17 +376,21 @@ export default function ScanToPDFPage() {
 
   const resetCorners = () => {
     if (!selected) return;
-    updateSelected({ corners: createDefaultCorners(selected.width, selected.height) });
+    updateSelected({
+      corners: createDefaultCorners(selected.width, selected.height),
+    });
   };
 
   const deletePage = (id: string) => {
-    const remaining = pages.filter(p => p.id !== id);
+    const remaining = pages.filter((p) => p.id !== id);
     setPages(remaining);
-    setSelectedId(remaining.length > 0 ? remaining[remaining.length - 1].id : null);
+    setSelectedId(
+      remaining.length > 0 ? remaining[remaining.length - 1].id : null,
+    );
   };
 
   const movePage = (id: string, dir: -1 | 1) => {
-    const idx = pages.findIndex(p => p.id === id);
+    const idx = pages.findIndex((p) => p.id === id);
     if (idx + dir < 0 || idx + dir >= pages.length) return;
     const arr = [...pages];
     [arr[idx], arr[idx + dir]] = [arr[idx + dir], arr[idx]];
@@ -340,31 +404,52 @@ export default function ScanToPDFPage() {
       const doc = await PDFDocument.create();
       for (const page of pages) {
         const img = new Image();
-        await new Promise<void>(res => { img.onload = () => res(); img.src = page.originalDataUrl; });
-        const result = perspectiveTransform(img, page.corners, page.brightness, page.contrast, page.rotation);
-        const imgBytes = await fetch(result).then(r => r.arrayBuffer());
+        await new Promise<void>((res) => {
+          img.onload = () => res();
+          img.src = page.originalDataUrl;
+        });
+        const result = perspectiveTransform(
+          img,
+          page.corners,
+          page.brightness,
+          page.contrast,
+          page.rotation,
+        );
+        const imgBytes = await fetch(result).then((r) => r.arrayBuffer());
         const embedded = await doc.embedJpg(imgBytes);
         // A4 at 150 DPI
-        const A4W = 595, A4H = 842;
+        const A4W = 595,
+          A4H = 842;
         const pdfPage = doc.addPage([A4W, A4H]);
         const scale = Math.min(A4W / embedded.width, A4H / embedded.height);
         const w = embedded.width * scale;
         const h = embedded.height * scale;
-        pdfPage.drawImage(embedded, { x: (A4W - w) / 2, y: (A4H - h) / 2, width: w, height: h });
+        pdfPage.drawImage(embedded, {
+          x: (A4W - w) / 2,
+          y: (A4H - h) / 2,
+          width: w,
+          height: h,
+        });
       }
       const out = await doc.save();
       const blob = new Blob([out], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = `scan_${Date.now()}.pdf`;
-      a.click(); URL.revokeObjectURL(url);
-    } finally { setExporting(false); }
+      a.href = url;
+      a.download = `scan_${Date.now()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Compute corner screen positions for overlay
-  const cornerScreenPositions = selected ? selected.corners.map(c =>
-    getCornerPos(c, selected.width, selected.height)
-  ) : [];
+  const cornerScreenPositions = selected
+    ? selected.corners.map((c) =>
+        getCornerPos(c, selected.width, selected.height),
+      )
+    : [];
 
   return (
     <>
@@ -465,17 +550,34 @@ export default function ScanToPDFPage() {
       `}</style>
 
       <div className="scan-root">
-
         {/* ── Camera overlay ── */}
         {cameraOpen && (
           <div className="camera-overlay">
-            <video ref={videoRef} className="camera-video" autoPlay playsInline muted />
+            <video
+              ref={videoRef}
+              className="camera-video"
+              autoPlay
+              playsInline
+              muted
+            />
             <div className="camera-footer">
-              <button className="btn btn-ghost" onClick={stopCamera}><X size={14} /> Cancel</button>
-              <button className="capture-btn" onClick={capturePhoto} disabled={!cameraReady} title="Take photo">
+              <button className="btn btn-ghost" onClick={stopCamera}>
+                <X size={14} /> Cancel
+              </button>
+              <button
+                className="capture-btn"
+                onClick={capturePhoto}
+                disabled={!cameraReady}
+                title="Take photo"
+              >
                 <div className="capture-btn-inner" />
               </button>
-              <button className="btn btn-ghost" onClick={() => startCamera(!isFront)}>🔄 Flip</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => startCamera(!isFront)}
+              >
+                🔄 Flip
+              </button>
             </div>
           </div>
         )}
@@ -483,30 +585,64 @@ export default function ScanToPDFPage() {
         {/* ── Photo confirm overlay ── */}
         {capturedPhoto && (
           <div className="photo-confirm">
-            <img src={capturedPhoto} className="photo-confirm-img" alt="captured" />
+            <img
+              src={capturedPhoto}
+              className="photo-confirm-img"
+              alt="captured"
+            />
             <div className="photo-confirm-footer">
-              <button className="btn btn-ghost" onClick={retakePhoto}><RotateCcw size={14} /> Retake</button>
-              <p style={{ fontSize: "0.85rem", color: "#666" }}>Use this photo?</p>
-              <button className="btn btn-amber" onClick={confirmCapturedPhoto}><Check size={14} /> Use Photo</button>
+              <button className="btn btn-ghost" onClick={retakePhoto}>
+                <RotateCcw size={14} /> Retake
+              </button>
+              <p style={{ fontSize: "0.85rem", color: "#666" }}>
+                Use this photo?
+              </p>
+              <button className="btn btn-amber" onClick={confirmCapturedPhoto}>
+                <Check size={14} /> Use Photo
+              </button>
             </div>
           </div>
         )}
 
         {/* ── Top bar ── */}
         <div className="scan-bar">
-          <span className="scan-bar-title">PDF<span>Master</span> — Scan</span>
+          <span className="scan-bar-title">
+            PDF<span>Master</span> — Scan
+          </span>
           <div className="bar-actions">
-            <button className="btn btn-blue btn-sm" onClick={() => startCamera()}>
-              <Camera size={13} /> Camera
-            </button>
-            <button className="btn btn-ghost btn-sm" onClick={() => fileInputRef.current?.click()}>
+            {pages.length === 0 && (
+              <button
+                className="btn btn-blue btn-sm"
+                onClick={() => startCamera()}
+              >
+                <Camera size={13} /> Camera
+              </button>
+            )}
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <Upload size={13} /> Upload
             </button>
-            <button className="btn btn-amber btn-sm" disabled={!pages.length || exporting} onClick={exportPDF}>
-              <Download size={13} /> {exporting ? "Exporting…" : `Export PDF (${pages.length})`}
-            </button>
+            {pages.length > 0 && (
+              <button
+                className="btn btn-amber btn-sm"
+                disabled={exporting}
+                onClick={exportPDF}
+              >
+                <Download size={13} />{" "}
+                {exporting ? "Exporting…" : `Export PDF (${pages.length})`}
+              </button>
+            )}
           </div>
-          <input ref={fileInputRef} type="file" multiple accept="image/*" hidden onChange={handleFileUpload} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            hidden
+            onChange={handleFileUpload}
+          />
         </div>
 
         {/* ── Empty state ── */}
@@ -514,10 +650,20 @@ export default function ScanToPDFPage() {
           <div className="scan-empty">
             <div className="empty-icon">📷</div>
             <h2 className="empty-title">Scan to PDF</h2>
-            <p className="empty-sub">Use your camera to scan documents or upload images. Adjust the crop corners, brightness and contrast for scanner-quality results.</p>
+            <p className="empty-sub">
+              Use your camera to scan documents or upload images. Adjust the
+              crop corners, brightness and contrast for scanner-quality results.
+            </p>
             <div className="empty-btns">
-              <button className="btn btn-blue" onClick={() => startCamera()}><Camera size={15} /> Open Camera</button>
-              <button className="btn btn-ghost" onClick={() => fileInputRef.current?.click()}><Upload size={15} /> Upload Images</button>
+              <button className="btn btn-blue" onClick={() => startCamera()}>
+                <Camera size={15} /> Open Camera
+              </button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload size={15} /> Upload Images
+              </button>
             </div>
           </div>
         )}
@@ -525,33 +671,68 @@ export default function ScanToPDFPage() {
         {/* ── Main layout ── */}
         {pages.length > 0 && (
           <div className="scan-layout">
-
             {/* Sidebar */}
             <div className="scan-sidebar">
               <div className="sidebar-hdr">
-                <span className="sidebar-lbl">{pages.length} Page{pages.length !== 1 ? "s" : ""}</span>
-                <button className="btn btn-ghost btn-sm btn-icon" onClick={() => startCamera()} title="Add page"><Plus size={12} /></button>
+                <span className="sidebar-lbl">
+                  {pages.length} Page{pages.length !== 1 ? "s" : ""}
+                </span>
+                <button
+                  className="btn btn-ghost btn-sm btn-icon"
+                  onClick={() => startCamera()}
+                  title="Add page"
+                >
+                  <Plus size={12} />
+                </button>{" "}
               </div>
               <div className="thumb-list">
                 {pages.map((page, i) => (
-                  <div key={page.id} className={`thumb-item${selectedId === page.id ? " active" : ""}`}
-                    onClick={() => setSelectedId(page.id)}>
+                  <div
+                    key={page.id}
+                    className={`thumb-item${selectedId === page.id ? " active" : ""}`}
+                    onClick={() => setSelectedId(page.id)}
+                  >
                     <img src={page.processedDataUrl} alt={`Page ${i + 1}`} />
                     <span className="thumb-badge">{i + 1}</span>
-                    <button className="thumb-del" onMouseDown={e => e.stopPropagation()}
-                      onClick={e => { e.stopPropagation(); deletePage(page.id); }}>
+                    <button
+                      className="thumb-del"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deletePage(page.id);
+                      }}
+                    >
                       <X size={9} />
                     </button>
                     <div className="thumb-move">
-                      <button className="thumb-mv-btn" onMouseDown={e => e.stopPropagation()}
-                        onClick={e => { e.stopPropagation(); movePage(page.id, -1); }}>▲</button>
-                      <button className="thumb-mv-btn" onMouseDown={e => e.stopPropagation()}
-                        onClick={e => { e.stopPropagation(); movePage(page.id, 1); }}>▼</button>
+                      <button
+                        className="thumb-mv-btn"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          movePage(page.id, -1);
+                        }}
+                      >
+                        ▲
+                      </button>
+                      <button
+                        className="thumb-mv-btn"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          movePage(page.id, 1);
+                        }}
+                      >
+                        ▼
+                      </button>
                     </div>
                   </div>
                 ))}
-                <button className="btn btn-ghost btn-sm" style={{ justifyContent: "center", margin: "4px 0" }}
-                  onClick={() => fileInputRef.current?.click()}>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  style={{ justifyContent: "center", margin: "4px 0" }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <Plus size={11} /> Add
                 </button>
               </div>
@@ -564,11 +745,16 @@ export default function ScanToPDFPage() {
                   <div
                     ref={previewRef}
                     className="preview-wrap"
-                    style={{ cursor: draggingCorner !== null ? "grabbing" : "default" }}
+                    style={{
+                      cursor: draggingCorner !== null ? "grabbing" : "default",
+                    }}
                     onMouseMove={onPreviewMouseMove}
                     onMouseUp={onPreviewMouseUp}
                     onMouseLeave={onPreviewMouseUp}
-                    onTouchMove={e => { e.preventDefault(); onPreviewMouseMove(e); }}
+                    onTouchMove={(e) => {
+                      e.preventDefault();
+                      onPreviewMouseMove(e);
+                    }}
                     onTouchEnd={onPreviewMouseUp}
                   >
                     <img
@@ -579,10 +765,15 @@ export default function ScanToPDFPage() {
                     />
 
                     {/* Perspective overlay SVG */}
-                    <svg className="corner-svg" viewBox={`0 0 ${previewRef.current?.clientWidth || 580} ${previewRef.current?.clientHeight || 820}`}>
+                    <svg
+                      className="corner-svg"
+                      viewBox={`0 0 ${previewRef.current?.clientWidth || 580} ${previewRef.current?.clientHeight || 820}`}
+                    >
                       {cornerScreenPositions.length === 4 && (
                         <polygon
-                          points={cornerScreenPositions.map(p => `${p.px},${p.py}`).join(" ")}
+                          points={cornerScreenPositions
+                            .map((p) => `${p.px},${p.py}`)
+                            .join(" ")}
                           fill="rgba(245,158,11,0.08)"
                           stroke="#F59E0B"
                           strokeWidth="2"
@@ -597,26 +788,48 @@ export default function ScanToPDFPage() {
                         key={idx}
                         className="corner-handle"
                         style={{ left: pos.px, top: pos.py }}
-                        onMouseDown={e => onCornerMouseDown(e, idx)}
-                        onTouchStart={e => onCornerMouseDown(e, idx)}
+                        onMouseDown={(e) => onCornerMouseDown(e, idx)}
+                        onTouchStart={(e) => onCornerMouseDown(e, idx)}
                       >
                         <div className="corner-handle-dot" />
                       </div>
                     ))}
                   </div>
 
-                  <p style={{ fontSize: "0.75rem", color: "#444", textAlign: "center" }}>
-                    Drag the <span style={{ color: "#F59E0B" }}>amber corners</span> to align with document edges
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#444",
+                      textAlign: "center",
+                    }}
+                  >
+                    Drag the{" "}
+                    <span style={{ color: "#F59E0B" }}>amber corners</span> to
+                    align with document edges
                   </p>
 
                   {/* Processed preview */}
                   <div style={{ width: "100%", maxWidth: "580px" }}>
-                    <p style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#444", marginBottom: "8px" }}>
+                    <p
+                      style={{
+                        fontSize: "0.65rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: "#444",
+                        marginBottom: "8px",
+                      }}
+                    >
                       Preview (processed)
                     </p>
                     <img
                       src={selected.processedDataUrl}
-                      style={{ width: "100%", borderRadius: "6px", border: "1px solid #1a1a1a", display: "block" }}
+                      style={{
+                        width: "100%",
+                        borderRadius: "6px",
+                        border: "1px solid #1a1a1a",
+                        display: "block",
+                      }}
                       alt="processed"
                     />
                   </div>
@@ -627,33 +840,93 @@ export default function ScanToPDFPage() {
             {/* Controls */}
             <div className="scan-controls">
               {!selected ? (
-                <p style={{ fontSize: "0.82rem", color: "#444", textAlign: "center" }}>Select a page</p>
+                <p
+                  style={{
+                    fontSize: "0.82rem",
+                    color: "#444",
+                    textAlign: "center",
+                  }}
+                >
+                  Select a page
+                </p>
               ) : (
                 <>
                   {/* Brightness */}
                   <div>
                     <p className="ctrl-lbl">☀️ Brightness</p>
-                    <div className="slider-row"><span>Dark</span><span>{selected.brightness}%</span><span>Bright</span></div>
-                    <input className="ctrl-slider" type="range" min={50} max={200} value={selected.brightness}
-                      onChange={e => updateSelected({ brightness: Number(e.target.value) })} />
+                    <div className="slider-row">
+                      <span>Dark</span>
+                      <span>{selected.brightness}%</span>
+                      <span>Bright</span>
+                    </div>
+                    <input
+                      className="ctrl-slider"
+                      type="range"
+                      min={50}
+                      max={200}
+                      value={selected.brightness}
+                      onChange={(e) =>
+                        updateSelected({ brightness: Number(e.target.value) })
+                      }
+                    />
                   </div>
 
                   {/* Contrast */}
                   <div>
                     <p className="ctrl-lbl">◑ Contrast</p>
-                    <div className="slider-row"><span>Low</span><span>{selected.contrast}%</span><span>High</span></div>
-                    <input className="ctrl-slider" type="range" min={50} max={200} value={selected.contrast}
-                      onChange={e => updateSelected({ contrast: Number(e.target.value) })} />
+                    <div className="slider-row">
+                      <span>Low</span>
+                      <span>{selected.contrast}%</span>
+                      <span>High</span>
+                    </div>
+                    <input
+                      className="ctrl-slider"
+                      type="range"
+                      min={50}
+                      max={200}
+                      value={selected.contrast}
+                      onChange={(e) =>
+                        updateSelected({ contrast: Number(e.target.value) })
+                      }
+                    />
                   </div>
 
                   {/* Presets */}
                   <div>
                     <p className="ctrl-lbl">Presets</p>
                     <div className="ctrl-btn-row">
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ brightness: 110, contrast: 115 })}>Auto</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ brightness: 130, contrast: 160 })}>Document</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ brightness: 150, contrast: 180 })}>B&W</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ brightness: 100, contrast: 100 })}>Original</button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({ brightness: 110, contrast: 115 })
+                        }
+                      >
+                        Auto
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({ brightness: 130, contrast: 160 })
+                        }
+                      >
+                        Document
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({ brightness: 150, contrast: 180 })
+                        }
+                      >
+                        B&W
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({ brightness: 100, contrast: 100 })
+                        }
+                      >
+                        Original
+                      </button>
                     </div>
                   </div>
 
@@ -661,32 +934,75 @@ export default function ScanToPDFPage() {
                   <div>
                     <p className="ctrl-lbl">🔄 Rotate</p>
                     <div className="ctrl-btn-row">
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ rotation: (selected.rotation - 90 + 360) % 360 })}>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({
+                            rotation: (selected.rotation - 90 + 360) % 360,
+                          })
+                        }
+                      >
                         <RotateCcw size={12} /> 90° L
                       </button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => updateSelected({ rotation: (selected.rotation + 90) % 360 })}>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() =>
+                          updateSelected({
+                            rotation: (selected.rotation + 90) % 360,
+                          })
+                        }
+                      >
                         <RotateCw size={12} /> 90° R
                       </button>
                     </div>
                     <div style={{ marginTop: "8px" }}>
-                      <div className="slider-row"><span>Fine</span><span>{selected.rotation}°</span></div>
-                      <input className="ctrl-slider" type="range" min={0} max={359} value={selected.rotation}
-                        onChange={e => updateSelected({ rotation: Number(e.target.value) })} />
+                      <div className="slider-row">
+                        <span>Fine</span>
+                        <span>{selected.rotation}°</span>
+                      </div>
+                      <input
+                        className="ctrl-slider"
+                        type="range"
+                        min={0}
+                        max={359}
+                        value={selected.rotation}
+                        onChange={(e) =>
+                          updateSelected({ rotation: Number(e.target.value) })
+                        }
+                      />
                     </div>
                   </div>
 
                   {/* Crop reset */}
                   <div>
                     <p className="ctrl-lbl">✂️ Crop</p>
-                    <button className="btn btn-ghost btn-sm" style={{ width: "100%", justifyContent: "center" }} onClick={resetCorners}>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={resetCorners}
+                    >
                       Reset Corners
                     </button>
                   </div>
 
                   {/* Delete page */}
-                  <div style={{ marginTop: "auto", paddingTop: "8px", borderTop: "1px solid #1a1a1a" }}>
-                    <button className="btn btn-ghost btn-sm" style={{ width: "100%", justifyContent: "center", color: "#ef4444", borderColor: "#2a1010" }}
-                      onClick={() => deletePage(selected.id)}>
+                  <div
+                    style={{
+                      marginTop: "auto",
+                      paddingTop: "8px",
+                      borderTop: "1px solid #1a1a1a",
+                    }}
+                  >
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{
+                        width: "100%",
+                        justifyContent: "center",
+                        color: "#ef4444",
+                        borderColor: "#2a1010",
+                      }}
+                      onClick={() => deletePage(selected.id)}
+                    >
                       <Trash2 size={12} /> Delete Page
                     </button>
                   </div>
